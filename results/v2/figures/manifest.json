@@ -1,0 +1,72 @@
+[
+  {
+    "file": "error_heatmap_fdm.png",
+    "sha256_16": "1488f3fe5c4c6de1"
+  },
+  {
+    "file": "error_heatmap_pinn.png",
+    "sha256_16": "008bd3ecb466d7b7"
+  },
+  {
+    "file": "policy_pinn_slice.png",
+    "sha256_16": "8323c851fd3eb79f"
+  },
+  {
+    "file": "policy_slices.png",
+    "sha256_16": "41fa17d12936c179"
+  },
+  {
+    "file": "surface_closed.png",
+    "sha256_16": "ce2a83b026692c38"
+  },
+  {
+    "file": "surface_factor_policy.png",
+    "sha256_16": "37703635aed7f90d"
+  },
+  {
+    "file": "surface_fdm.png",
+    "sha256_16": "4ae8e4b6292f6fcc"
+  },
+  {
+    "file": "surface_pinn_error.png",
+    "sha256_16": "dfcd77ce6daa8e66"
+  },
+  {
+    "file": "surface_pinn_error_clip.txt",
+    "sha256_16": "08cdfd96bfbc8cd4"
+  },
+  {
+    "file": "table_constraint.csv",
+    "sha256_16": "adcbc5ce86ad5b1d"
+  },
+  {
+    "file": "table_factor.csv",
+    "sha256_16": "1bd5ad5498d5b459"
+  },
+  {
+    "file": "table_fdm_convergence.csv",
+    "sha256_16": "36043396a7c1cd18"
+  },
+  {
+    "file": "table_main.csv",
+    "sha256_16": "f4ad2f5d4efa2283"
+  },
+  {
+    "file": "table_market.csv",
+    "sha256_16": "4ae526271452b0e7"
+  },
+  {
+    "file": "table_sensitivity.csv",
+    "sha256_16": "160f3546de07911b"
+  },
+  {
+    "file": "training_loss.png",
+    "sha256_16": "c8fd8e6021cb39a5"
+  },
+  {
+    "mu": 0.23456419554737107,
+    "m_log": 0.20164940530246397,
+    "sigma": 0.2565727586666484,
+    "n_rows": 33
+  }
+]

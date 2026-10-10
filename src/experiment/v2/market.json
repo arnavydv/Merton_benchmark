@@ -1,0 +1,11 @@
+{
+  "note": "GBM drift is mean log return plus sigma^2/2. The number 0.20164940530246397 is the annualized mean log return, not mu.",
+  "m_log": 0.20164940530246397,
+  "sigma": 0.2565727586666484,
+  "mu": 0.23456419554737107,
+  "rate": 0.0368,
+  "gamma": 5.0,
+  "T": 1.0,
+  "w0": 1.0,
+  "pi_star": 0.600836870221195
+}

@@ -1,0 +1,36 @@
+{
+  "exp": "E5",
+  "seed": 3,
+  "status": "ok",
+  "mu": 0.23456419554737107,
+  "m_log": 0.20164940530246397,
+  "sigma": 0.2565727586666484,
+  "method": "deep_bsde_terminal",
+  "seconds": 627.7202450999757,
+  "epochs": 2000,
+  "best_loss": 0.1581270545721054,
+  "n_paths": 1024,
+  "n_steps": 64,
+  "scheme": "Y <- Y + Z dB with Z evaluated at the pre-update state; loss E[(Y_T-U)^2] - E[U]",
+  "gamma": 5.0,
+  "pi": {
+    "n": 10000,
+    "n_finite": 10000,
+    "mae": 0.011837354362010956,
+    "rmse": 0.014365645637608827,
+    "median_ae": 0.010627806186676025,
+    "p95_ae": 0.02842885255813597,
+    "max_ae": 0.04135596752166748,
+    "bias": -0.002581100356578827
+  },
+  "y0": -0.1702522486448288,
+  "V01_closed": -0.1701385112348133,
+  "abs_y0_gap": 0.00011373741001549642,
+  "utility": {
+    "mean_utility": -0.17011889709159259,
+    "certainty_equivalent": 1.10102419464611,
+    "n_paths": 20000,
+    "n_steps": 252,
+    "seed": 7
+  }
+}

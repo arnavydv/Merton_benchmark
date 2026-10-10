@@ -1,0 +1,57 @@
+{
+  "exp": "E3",
+  "seed": 3,
+  "status": "ok",
+  "mu": 0.23456419554737107,
+  "m_log": 0.20164940530246397,
+  "sigma": 0.2565727586666484,
+  "method": "flexible_power_pinn",
+  "seconds": 85.90389130008407,
+  "epochs": 2000,
+  "best_loss": 1.355522545054555e-05,
+  "head": "V=exp(g(t,log w))*w^(1-gamma)/(1-gamma); g may depend on wealth",
+  "n_collocation": 25000,
+  "n_terminal": 8000,
+  "collocation": "LHS t~U[0,T], w~U[0.5,2], redrawn each epoch",
+  "terminal": "t=T, w~U[0.5,2] LHS, target w^(1-gamma)/(1-gamma)",
+  "gamma": 5.0,
+  "pi": {
+    "n": 10000,
+    "n_finite": 10000,
+    "mae": 0.0008141842007637023,
+    "rmse": 0.0010625264117361452,
+    "median_ae": 0.000647425651550293,
+    "p95_ae": 0.002158045768737792,
+    "max_ae": 0.004091203212738037,
+    "bias": -3.706451654434204e-05
+  },
+  "pi_clipped": {
+    "n": 10000,
+    "n_finite": 10000,
+    "mae": 0.0008141842007637023,
+    "rmse": 0.0010625264117361452,
+    "median_ae": 0.000647425651550293,
+    "p95_ae": 0.002158045768737792,
+    "max_ae": 0.004091203212738037,
+    "bias": -3.706451654434204e-05
+  },
+  "V": {
+    "n": 10000,
+    "n_finite": 10000,
+    "mae": 0.0006189620263222027,
+    "rmse": 0.0009733540592638872,
+    "median_ae": 0.00021880513596242435,
+    "p95_ae": 0.0023228983344271647,
+    "max_ae": 0.0028698807257168113,
+    "bias": 0.00037055649260260895
+  },
+  "frac_concave": 1.0,
+  "utility": {
+    "mean_utility": -0.17010355463766874,
+    "certainty_equivalent": 1.1010490204671937,
+    "n_paths": 20000,
+    "n_steps": 252,
+    "seed": 7
+  },
+  "constrained": null
+}

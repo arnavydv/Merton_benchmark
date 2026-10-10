@@ -1,0 +1,45 @@
+{
+  "seed": 0,
+  "mu": 0.20164940530246397,
+  "sigma": 0.2565727586666484,
+  "rate": 0.0368,
+  "w0": 1.0,
+  "T": 1.0,
+  "num_steps": 252,
+  "num_paths": 2000,
+  "gamma": 5.0,
+  "epochs": 5000,
+  "lr": 0.001,
+  "test_brownian": {
+    "num_paths": 200000,
+    "num_steps": 1,
+    "T": 0.7,
+    "tol_mean": 0.005,
+    "tol_var": 0.008
+  },
+  "neural_dim_pi_model":{
+    "input_dimension":2,
+    "output_dimension":1,
+    "hidden_dimension":64
+  },
+
+  "neural_dim_z_model":{
+    "input_dimension":2,
+    "output_dimension":1,
+    "hidden_dimension":64
+  },
+
+  "test_forward": {
+    "sigma_zero_pi_c": 0.5,
+    "sigma_zero_num_steps": 8,
+    "sigma_zero_num_paths": 5,
+    "mean_increment_num_steps": 10,
+    "mean_increment_num_paths": 50000,
+    "mean_increment_tol": 0.004
+  },
+  "test_backward": {
+    "num_steps": 7,
+    "num_paths": 10,
+    "terminal_tol": 1e-6
+  }
+}

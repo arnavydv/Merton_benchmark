@@ -1,0 +1,51 @@
+{
+  "exp": "E4",
+  "seed": 2,
+  "status": "ok",
+  "mu": 0.23456419554737107,
+  "m_log": 0.20164940530246397,
+  "sigma": 0.2565727586666484,
+  "method": "crra_ansatz",
+  "seconds": 38.21629610005766,
+  "epochs": 2000,
+  "best_loss": 3.078027657466009e-05,
+  "n_collocation": 25000,
+  "n_terminal": 8000,
+  "note": "V_w/(w V_ww)=1/gamma for any g. Policy MAE is a roundoff check. The trained object is V.",
+  "gamma": 5.0,
+  "pi": {
+    "n": 10000,
+    "n_finite": 10000,
+    "mae": 3.2049417495727536e-08,
+    "rmse": 4.68835147261153e-08,
+    "median_ae": 0.0,
+    "p95_ae": 5.960464477539063e-08,
+    "max_ae": 1.7881393432617188e-07,
+    "bias": 6.73532485961914e-10
+  },
+  "V": {
+    "n": 10000,
+    "n_finite": 10000,
+    "mae": 0.0006416333643200274,
+    "rmse": 0.0011793138776462688,
+    "median_ae": 0.0001822745328082659,
+    "p95_ae": 0.002927996939931939,
+    "max_ae": 0.0055235716409192115,
+    "bias": 8.333933182262615e-05
+  },
+  "V01": -0.1701385112348133,
+  "utility_of_pi_star": {
+    "mean_utility": -0.1701029852454652,
+    "certainty_equivalent": 1.1010499418618713,
+    "n_paths": 20000,
+    "n_steps": 252,
+    "seed": 7
+  },
+  "utility": {
+    "mean_utility": -0.17010298526971301,
+    "certainty_equivalent": 1.1010499418226332,
+    "n_paths": 20000,
+    "n_steps": 252,
+    "seed": 7
+  }
+}
