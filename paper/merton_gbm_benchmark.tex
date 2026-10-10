@@ -22,9 +22,7 @@
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\R}{\mathbb{R}}
 
-\title{A corrected-drift Merton benchmark:\\
-finite differences, value networks, and a terminal-loss BSDE\\
-on three years of Apple prices}
+\title{A Numerical Benchmark for the Merton Problem under Corrected GBM Drift: \\Finite Differences, PINNs, and Terminal-Loss Deep BSDEs}
 
 \author{
 Arnav Yadav\\
@@ -42,26 +40,26 @@ Somya Patel\\
 \maketitle
 
 \begin{abstract}
-We compare a log-wealth finite-difference grid, a power-scaled value network, a CRRA-shaped value network, and a forward deep BSDE on one Merton problem whose equity coefficients are computed from Apple adjusted closes. The sample is 23~May~2023 through 22~May~2026, the last session in a window opened on 23~May~2023 and closed on 23~May~2026. From 752 log returns the annualized mean log return is $m=0.201649$ and the GBM volatility is $\sigma=0.256573$. The drift in $\mathrm dS/S$ is $\mu=m+\sigma^2/2=0.234564$, not $m$. With $r=0.0368$, $\gamma=5$, and no consumption, the Merton weight is $\pi^{\star}=0.600837$.
+We compare four numerical methods for the Merton portfolio problem using equity parameters estimated from Apple adjusted closing prices: a log-wealth finite-difference grid, two value-network formulations, and a forward deep BSDE. The sample covers 23~May~2023 through 22~May~2026 and contains 752 daily log returns. The annualized mean log return is $m=0.201649$, and the estimated GBM volatility is $\sigma=0.256573$. Accordingly, the drift in $\mathrm dS/S$ is $\mu=m+\sigma^2/2=0.234564$, rather than $m$. With constant risk-free rate $r=0.0368$, relative risk aversion $\gamma=5$, and no intermediate consumption, the classical Merton allocation is $\pi^{\star}=0.600837$.
 
-On a shared mesh of $10^{4}$ points the $500\times 252$ grid has policy mean absolute error $2.52\times 10^{-4}$. Five seeds of a power-scaled value network, in which a free function $g(t,\log w)$ multiplies the CRRA profile, have policy mean absolute error $1.62\times 10^{-3}$ (sample standard deviation $5.8\times 10^{-4}$) and value mean absolute error $7.09\times 10^{-4}$. The stricter ansatz $g=g(t)$ only forces the weight to equal $\pi^{\star}$ up to roundoff; its value error averages $4.64\times 10^{-4}$. Five seeds of the forward deep BSDE have policy mean absolute error $0.0215$ (standard deviation $0.0072$) and match $V(0,1)$ to about $5\times 10^{-5}$ in $|Y_0-V(0,1)|$. Traded certainty equivalents on $20{,}000$ common paths stay within $10^{-4}$ of the closed-form value $1.10105$ for every one-dimensional method. An Ornstein--Uhlenbeck factor correlated with the stock moves the grid weight at $(t,Y)=(0,0)$ from $0.601$ to $0.499$. The power-scaled network tracks that grid to policy error $0.018$; the deep BSDE, to about $0.097$. A cap $\pi\le 0.4$ binds: the grid weight sits $0.201$ away from $\pi^{\star}$, and the network matches the capped grid to $10^{-8}$. Every printed number is taken from the run ledger. The guide is \texttt{run\_one.py}.
+On a shared evaluation mesh of $10^{4}$ points, the $500\times 252$ log-wealth grid achieves a policy mean absolute error (MAE) of $2.52\times 10^{-4}$. Across five runs, the power-scaled value network, whose free function $g(t,\log w)$ multiplies the CRRA profile, has policy MAE $1.62\times 10^{-3}$ (sample standard deviation $5.8\times 10^{-4}$) and value MAE $7.09\times 10^{-4}$. The more restrictive ansatz $g=g(t)$ recovers the optimal weight to round-off; its mean value error is $4.64\times 10^{-4}$. Across five runs, the forward deep BSDE has policy MAE $0.0215$ (standard deviation $0.0072$), while its estimate of $V(0,1)$ differs from the closed-form value by about $5\times 10^{-5}$. On $20{,}000$ shared paths, the certainty equivalent for each one-dimensional method is within $10^{-4}$ of the closed-form value, $1.10105$. Adding an Ornstein--Uhlenbeck factor correlated with the stock lowers the grid weight at $(t,Y)=(0,0)$ from $0.601$ to $0.499$. The power-scaled network has policy error $0.018$ against this factor grid, compared with about $0.097$ for the deep BSDE. Under the constraint $0\le\pi\le0.4$, the grid's weight differs from $\pi^{\star}$ by $0.201$ on average, and the network matches the constrained grid to $10^{-8}$. All reported values are taken from the run ledger; the experiment driver is \texttt{run\_one.py}.
 \end{abstract}
 
 \noindent\textbf{Keywords:} Merton problem; GBM drift; finite differences; physics-informed neural networks; deep BSDE.
 
-\section{Contribution and claim limits}
+\section{Scope and contributions}
 \label{sec:claim}
 
-The note is a controlled numerical comparison, not a new existence theorem and not a claim about $d=100$. \citet{merton1969} and \citet{merton1971} supply the control problem. \citet{raissi2019} and \citet{sirignano2018} supply the value-network methods. \citet{e2017} and \citet{han2018} are cited only for the forward scheme whose loss penalizes $Y_T-U(W_T)$. The martingale objective $-\E[Y_0]+\mathrm{Var}(Y_0)$ is a different algorithm and is not trained here.
+This paper presents a controlled numerical comparison; it does not establish a new theorem or make claims about problems at dimension $d=100$. The control problem follows \citet{merton1969} and \citet{merton1971}. The value-network approaches draw on \citet{raissi2019} and \citet{sirignano2018}. We cite \citet{e2017} and \citet{han2018} for the forward discretization, but train the terminal-loss objective $\E[(Y_T-U(W_T))^2]-\E[U(W_T)]$, not the distinct martingale objective $-\E[Y_0]+\mathrm{Var}(Y_0)$.
 
-What the ledger supports is the following. The drift identity is fixed before training. Five seeds are run for each one-dimensional network at a budget fixed in advance. The finite-difference grid recovers $\pi^{\star}$ at the expected rate in the wealth mesh. The CRRA ansatz is labeled as an ansatz. A one-factor opportunity set, in the sense of \citet{kim1996}, is solved on a $(t,Y)$ grid because wealth separates and the correlated factor does not. A leverage cap that binds is scored against that constrained grid rather than against the unconstrained $\pi^{\star}$.
+We apply the GBM drift correction before training and report five independently seeded runs for each one-dimensional network under a prespecified budget. We also examine finite-difference convergence as the wealth grid is refined. Because the CRRA-shaped ansatz implies the optimal policy analytically, we treat it as a value-function approximation rather than evidence of policy learning. Following the stochastic-opportunity-set setting of \citet{kim1996}, we solve a one-factor problem on a $(t,Y)$ grid: CRRA homogeneity separates wealth, while the correlated factor remains a state variable. We evaluate the binding leverage constraint against the constrained grid rather than the unconstrained Merton weight.
 
-What is not claimed is a high-dimensional solver, a consumption--investment existence result, or that a small policy error for the CRRA ansatz identifies the weight. The risk-free rate is a declared constant. The equity is one name.
+The study does not propose a high-dimensional solver or an existence result for a consumption--investment problem. Nor does the small policy error of the CRRA ansatz show that a network has learned the optimal allocation. The risk-free rate is held fixed, and the empirical calibration uses a single equity.
 
-\section{Market coefficients}
+\section{Market inputs and calibration}
 \label{sec:market}
 
-Let $S_t$ be the adjusted close. Daily log returns on the 753 sessions from 23~May~2023 through 22~May~2026 give $n=752$ increments. With a 252-day year,
+Let $S_t$ denote Apple's adjusted closing price. The 753 trading sessions from 23~May~2023 through 22~May~2026 yield $n=752$ daily log returns for AAPL, obtained using \texttt{yfinance}. Using 252 trading days per year,
 \begin{align}
 m &= 252\cdot \frac{1}{n}\sum_{i=1}^{n}\log\frac{S_{i}}{S_{i-1}} = 0.20164940530246397,\\
 \sigma &= \sqrt{252}\; s_{n-1}(\log S_{i}/S_{i-1}) = 0.2565727586666484.
@@ -70,7 +68,7 @@ If $\mathrm dS/S=\mu\,\mathrm dt+\sigma\,\mathrm dB$, then $\E[\log(S_{t+\Delta}
 \begin{equation}
 \mu = m+\sigma^2/2 = 0.23456419554737107.
 \end{equation}
-A fresh \texttt{yfinance} download of the same window reproduced $m$ and $\sigma$ within $10^{-7}$. The frozen file keeps the stored pair. The constant $r=0.0368$ is not a Treasury-bill average. Relative risk aversion is $\gamma=5$, the horizon is $T=1$, and initial wealth is $W_0=1$. There is no consumption in the one-dimensional block or in the factor block.
+An independent \texttt{yfinance} download for the same period reproduced $m$ and $\sigma$ to within $10^{-7}$. The experiments use the frozen estimates reported above. The risk-free rate $r=0.0368$ is a specified constant, not an estimate of the Treasury-bill rate. We set relative risk aversion to $\gamma=5$, the horizon to $T=1$, and initial wealth to $W_0=1$. No intermediate consumption is included in the one-dimensional model.
 
 \begin{table}[H]
 \centering
@@ -92,86 +90,86 @@ $V(0,1)$ & $-0.170138511234813$ \\
 \end{tabular}
 \end{table}
 
-Putting $m$ in the drift slot changes the weight from $0.600837$ to $0.500837$. Checkpoints trained on that substitution are not rescored in this paper.
+Using $m$ in place of the GBM drift would change the optimal weight from $0.600837$ to $0.500837$. We do not rescore checkpoints trained with that substitution.
 
-\section{The control problem}
+\section{The Merton portfolio problem}
 \label{sec:control}
 
-Wealth in the risky asset and the constant money-market account obeys
+Wealth invested in the risky asset and the money-market account evolves according tos
 \begin{equation}
 \mathrm dW_t = W_t\big(r+\pi_t(\mu-r)\big)\,\mathrm dt + W_t\pi_t\sigma\,\mathrm dB_t,
 \end{equation}
-and the investor maximizes $\E[U(W_T)]$ with
+The investor maximizes expected terminal utility, $\E[U(W_T)]$, where
 \begin{equation}
 U(w)=\frac{w^{1-\gamma}}{1-\gamma}, \qquad \gamma>1.
 \end{equation}
-The value $V(t,w)$ solves the Hamilton--Jacobi--Bellman equation of \citet{merton1969},
+The value function $V(t,w)$ satisfies the Hamilton--Jacobi--Bellman equation derived in \citet{merton1969},
 \begin{equation}
 V_t + \sup_{\pi}\Big\{w\big(r+\pi(\mu-r)\big)V_w + \tfrac12 \pi^2\sigma^2 w^2 V_{ww}\Big\} = 0,
 \end{equation}
-with $V(T,w)=U(w)$. The maximizer and the value are
+subject to $V(T,w)=U(w)$. The optimal allocation and value function are
 \begin{align}
 \pi^{\star} &= \frac{\mu-r}{\gamma\sigma^2},\\
 V(t,w) &= \mathrm e^{A(T-t)}\frac{w^{1-\gamma}}{1-\gamma},\\
 A &= (1-\gamma)\left(r+\frac{(\mu-r)^2}{2\gamma\sigma^2}\right).
 \end{align}
-On the frozen coefficients, $\pi^{\star}=0.600836870221195$ and $V(0,1)=-0.170138511234813$.
+For the frozen coefficients, $\pi^{\star}=0.600836870221195$ and $V(0,1)=-0.170138511234813$.
 
 \section{Numerical methods}
 \label{sec:methods}
 
 \subsection{Finite differences}
 
-The grid is written in log-wealth $x=\log w$ on $x\in[-2.5,4.5]$, with an implicit ($\theta=1$) upwind scheme. The candidate weight at each node is the first-order condition
+We discretize the PDE in log wealth, $x=\log w$, over $x\in[-2.5,4.5]$. Time stepping is fully implicit ($\theta=1$), and we use an upwind approximation for the advection term. At each grid node, we compute the candidate control from the first-order condition
 \begin{equation}
-\pi = -\frac{(\mu-r)V_x}{\sigma^2(V_{xx}-V_x)},
+\pi = -\frac{(\mu-r)V_x}{\sigma^2(V_{xx}-V_x)}.
 \end{equation}
-clipped to $[-1,5]$ in the unconstrained runs and to $[0,0.4]$ in the constrained runs. Non-finite first-order conditions are replaced by $0$, not by $\pi^{\star}$. The release grid is $N_x=500$, $N_t=252$.
+We then project it onto the admissible interval: $[-1,5]$ in the unconstrained experiments and $[0,0.4]$ in the constrained experiments. Non-finite first-order conditions are set to zero; the analytical weight $\pi^{\star}$ is never inserted. The reference grid for the main tables has $N_x=500$ wealth points and $N_t=252$ time steps.
 
 \subsection{Collocation and the terminal condition}
 
-Both value networks draw a fresh Latin hypercube at every Adam step. Interior points use two dimensions: time uniform on $[0,T]$ and wealth uniform on $[0.5,2]$, jointly. The one-dimensional budget is $25{,}000$ interior points. Terminal points use a one-dimensional hypercube of $8{,}000$ wealth samples on the same interval, with time pinned at $T$ and target $U(w)$. The sampler seed is a function of the run seed and the epoch, so a repeated command with the same seed replays the same minibatches on the same device class.
+At each Adam iteration, both value networks draw a fresh Latin-hypercube sample. Interior collocation points are sampled jointly in time and wealth, with time uniform on $[0,T]$ and wealth uniform on $[0.5,2]$. Each one-dimensional run uses $25{,}000$ interior points. The terminal-condition loss uses $8{,}000$ wealth samples from the same interval, with time fixed at $T$ and target $U(w)$. The sampler seed is determined by the run seed and epoch, so repeating a command with the same seed reproduces the minibatches on the same device type.
 
-The unstructured network of \citet{raissi2019} is given a power head so that the output lives on the scale of $U$. Five $\tanh$ layers of width 128 map $(\log w, t)$ to a scalar $g$, and
+Following the collocation approach of \citet{raissi2019}, we use a network with a power head that scales its output to the utility function. Five hyperbolic-tangent layers, each of width 128, map $(\log w,t)$ to a scalar $g$. We define the value function as
 \begin{equation}
 V(t,w)=\mathrm e^{g(t,\log w)}\frac{w^{1-\gamma}}{1-\gamma}.
 \end{equation}
-Because $g$ may depend on wealth, $V_w/(w V_{ww})$ is not identically $1/\gamma$. The network does not output $\pi$. After training, the weight is the first-order condition on the automatic derivatives. The loss is the mean square HJB residual, plus ten times the relative terminal mismatch, plus $0.1$ times the squared positive part of $V_{ww}$ and of $-V_w$. The residual uses the reduced unconstrained Hamiltonian unless the run is the capped problem, in which case the Hamiltonian is evaluated at $\pi$ projected onto $[0,0.4]$. A raw network with no power head was not used: on this utility its target ranges over orders of magnitude inside $[0.5,2]$, and the head removes that scale without inserting $\pi^{\star}$.
+Because $g$ can depend on wealth, this architecture does not impose $V_w/(wV_{ww})=1/\gamma$. The network does not output a policy directly; after training, we recover the weight by applying the first-order condition to automatic derivatives of $V$. The loss combines the mean-square HJB residual, ten times the relative terminal mismatch, and penalties equal to $0.1$ times the squared positive parts of $V_{ww}$ and $-V_w$. For unconstrained runs, the residual uses the reduced Hamiltonian. For capped runs, it evaluates the Hamiltonian at the control projected onto $[0,0.4]$. We did not use an unscaled output network because target values span several orders of magnitude over the wealth interval $[0.5,2]$. The power head addresses this scale variation without imposing $\pi^{\star}$.
 
 \subsection{The CRRA ansatz}
 
-The shaped network is
+The CRRA-shaped network is defined by
 \begin{equation}
 V(t,w)=\mathrm e^{g_\theta(t)}\frac{w^{1-\gamma}}{1-\gamma}.
 \end{equation}
-For any $g_\theta$, $V_w/(w V_{ww})=1/\gamma$, so the induced weight equals $\pi^{\star}$ up to roundoff whenever $\mu$, $r$, $\sigma$, and $\gamma$ are the training coefficients. A policy error of size $10^{-8}$ on this model is a derivative check. The trained object is $g_\theta$, and the reported error is the error in $V$.
+For any $g_\theta$, the ratio $V_w/(wV_{ww})$ equals $1/\gamma$. Thus, when the training coefficients match the evaluation coefficients, the recovered weight equals $\pi^{\star}$ up to machine precision. A policy error of approximately $10^{-8}$ therefore checks the automatic derivatives; it does not measure policy learning. The network trains the scalar function $g_\theta$, and we report its value-function error.
 
 \subsection{Forward deep BSDE}
 
-Following the forward discretization of \citet{han2018} and \citet{e2017}, a scalar $Y_0$ and a network $Z$ are stepped along the controlled wealth. There is no running consumption, and under a Markov control the value along the path is a martingale when the HJB residual vanishes, so the increment is
+Our scheme uses the forward discretization described by \citet{han2018} and \citet{e2017}. We evolve a scalar initial value $Y_0$ and a network $Z$ alongside controlled wealth; the model has no intermediate consumption. Under a Markov control that satisfies the HJB equation, the value process is a martingale, giving the update
 \begin{equation}
-Y \leftarrow Y + Z(t,W)\,\Delta B
+Y \leftarrow Y + Z(t,W)\,\Delta B.
 \end{equation}
-with $Z$ evaluated at the wealth observed before that Brownian increment is applied. The policy network enters only through $W$. Its range is $(-2,2)$ via $2\tanh$. The loss on each batch of $1{,}024$ paths and $64$ steps is
+We evaluate $Z$ at the wealth value before applying the current Brownian increment. The policy network affects the state evolution through the wealth process $W$, and a $2\tanh$ transformation restricts its output to $(-2,2)$. Each training batch contains $1{,}024$ paths with $64$ time steps, and the loss is
 \begin{equation}
 \E\big[(Y_T-U(W_T))^2\big] - \E[U(W_T)].
 \end{equation}
-The mean-square term trains $(Y_0,Z)$. The utility term is what moves the policy: a pure terminal match can be achieved for a poor control if $Z$ is flexible. $Y_0$ is initialized at $U(W_0)$, not at the closed form. This scheme is not the martingale objective that assigns $Y_T=U(W_T)$ and scores $-\E[Y_0]+\mathrm{Var}(Y_0)$.
+The mean-square term trains $(Y_0,Z)$, while the expected-utility term guides policy optimization. A flexible $Z$ can fit the terminal condition even when the control is poor, so terminal matching alone is insufficient. We initialize $Y_0$ at $U(W_0)$ rather than at its closed-form value. This terminal-loss objective differs from the martingale approach, which imposes $Y_T=U(W_T)$ and minimizes $-\E[Y_0]+\mathrm{Var}(Y_0)$.
 
-\subsection{Protocol}
+\subsection{Training and evaluation protocol}
 
-Adam uses learning rate $10^{-3}$. One-dimensional networks run $2{,}000$ epochs. The best-loss weights are kept. Seeds are $\{0,1,2,3,4\}$ for the vanilla network, the ansatz, and the deep BSDE. The mesh used for every one-dimensional table has $10^{4}$ points, seed $12345$, wealth log-uniform on $[0.5,2]$, and time uniform on $[0,1)$. Traded utility uses $20{,}000$ paths, $252$ steps, and seed $7$, the same paths for every method. Certainty equivalent wealth is the $w$ with $U(w)=\E[U(W_T)]$. Device was CUDA. Floats will move on CPU; the seeds and the pass band on the grid will not.
+We train each one-dimensional network for $2{,}000$ epochs using Adam with learning rate $10^{-3}$ and retain the checkpoint with the lowest training loss. The power-scaled network, CRRA ansatz, and deep BSDE each use seeds $\{0,1,2,3,4\}$. We evaluate all one-dimensional methods on the same $10^{4}$-point mesh (seed $12345$), with log-uniform wealth on $[0.5,2]$ and uniform time on $[0,1)$. Traded utility is estimated on the same $20{,}000$ paths for every method, using $252$ steps and seed $7$. Certainty-equivalent wealth is defined by $U(w)=\E[U(W_T)]$. Training used CUDA; CPU runs may differ slightly in floating-point values, but the seeds and grid acceptance threshold are unchanged.
 
-\section{One-dimensional results}
+\section{Results for the constant-coefficient problem}
 \label{sec:results1d}
 
-\subsection{The grid}
+\subsection{Finite-difference grid}
 
-Experiment E1 is the $500\times 252$ solve on $\mu$. Policy mean absolute error on the mesh is $2.5217\times 10^{-4}$. The error is almost constant across the mesh (the root mean square matches the mean absolute error), which is what a constant-weight solution looks like when the grid's $\pi$ is a single biased number. The value at the node nearest $(t,W)=(0,1)$ is $-0.169453$, against $-0.170139$. Mesh value mean absolute error is $4.398\times 10^{-3}$. On the common paths the closed-form weight and the grid weight both have certainty equivalent $1.10105$ to five decimals (mean utility $-0.170103$).
+Experiment E1 uses the corrected drift $\mu$ on a grid with 500 wealth points and 252 time steps. On the shared evaluation mesh, the policy MAE is $2.5217\times 10^{-4}$. The near equality of the root-mean-square and mean absolute errors indicates that the grid's small policy bias is nearly constant across the mesh, as expected when the optimal weight itself is constant. At the grid node nearest $(t,W)=(0,1)$, the computed value is $-0.169453$, compared with the exact value $-0.170139$. The value-function MAE over the mesh is $4.398\times 10^{-3}$. On the common paths, both the closed-form and grid policies yield certainty-equivalent wealth of $1.10105$ to five decimal places; their mean utility is $-0.170103$.
 
 \begin{table}[H]
 \centering
-\caption{Finite-difference refinement (E2). Policy error tracks $N_x$. Extra time steps do not move $\pi$.}
+\caption{Finite-difference refinement study (E2). Policy error decreases as the number of wealth points $N_x$ increases; adding time steps does not change the recovered policy.}
 \label{tab:fdm}
 \begin{tabular}{rrrr}
 \toprule
@@ -190,7 +188,7 @@ $N_x$ & $N_t$ & policy MAE & value MAE \\
 \end{tabular}
 \end{table}
 
-Quadrupling $N_x$ from 128 to 500 cuts the policy error by about fifteen, close to a second-order spatial gain on this smooth solution. Value error on the random mesh does not fall when $N_t$ rises. The policy, which is what is traded, is already settled by the spatial grid.
+When we go from 128 to 500 wealth points (roughly four times as many), the policy error drops by a factor of about fifteen. That is close to the improvement you would expect from a second-order method on a smooth solution. Adding more time steps does not reduce the value error on the random mesh. The policy, which is the quantity that is actually traded, is already fixed by the wealth grid.
 
 \begin{figure}[H]
 \centering
@@ -206,13 +204,13 @@ Quadrupling $N_x$ from 128 to 500 cuts the policy error by about fifteen, close 
 \label{fig:fdm}
 \end{figure}
 
-\subsection{Neighbour grids}
+\subsection{Grid refinement study}
 
-Experiment E6 reruns the $256\times 128$ grid at $\gamma\in\{3,7\}$ and at $\sigma$ scaled by $0.8$ and $1.2$, still on the corrected drift formula. Policy mean absolute error stays between $3.4\times 10^{-4}$ and $1.7\times 10^{-3}$. The grid is not tuned to the single Apple point $(\gamma,\sigma)=(5,0.256573)$.
+Experiment E6 repeats the $256\times 128$ solve for risk-aversion levels $\gamma=3$ and $\gamma=7$, and for volatility scaled by factors of $0.8$ and $1.2$. Each case uses the same corrected drift formula. Policy MAE ranges from $3.4\times 10^{-4}$ to $1.7\times 10^{-3}$, indicating that the grid is not tailored only to the Apple calibration $(\gamma,\sigma)=(5,0.256573)$.
 
 \begin{table}[H]
 \centering
-\caption{E6. Each row is a new solve. $\pi^{\star}$ changes with the row. The error is against that row's closed form.}
+\caption{Sensitivity results (E6). Each row reports a separate solve with its own optimal weight $\pi^{\star}$; policy error is measured against the corresponding closed-form solution.}
 \label{tab:sens}
 \begin{tabular}{rrrr}
 \toprule
@@ -226,21 +224,21 @@ $\gamma$ & $\sigma$ & $\pi^{\star}$ & policy MAE \\
 \end{tabular}
 \end{table}
 
-\subsection{Five seeds of the ansatz}
+\subsection{CRRA ansatz: five-seed results}
 
-E4 trains the shaped value network for $2{,}000$ epochs. Policy mean absolute error is between $3.18\times 10^{-8}$ and $3.26\times 10^{-8}$ on every seed. That number is not a portfolio result. Value mean absolute error on the mesh has mean $4.64\times 10^{-4}$ and sample standard deviation $1.81\times 10^{-4}$ across the five seeds (the five errors are $4.61$, $3.02$, $6.42$, $6.49$, and $2.66$ times $10^{-4}$). Traded certainty equivalents match the closed-form paths at $1.10105$, as they must once the weight is $\pi^{\star}$.
+In E4, we train the time-only CRRA ansatz for $2{,}000$ epochs. Across seeds, policy MAE ranges from $3.18\times 10^{-8}$ to $3.26\times 10^{-8}$. This near-zero error reflects the architecture's analytical structure and serves as a derivative check, rather than an independent measure of policy performance. Across five seeds, value MAE averages $4.64\times 10^{-4}$, with sample standard deviation $1.81\times 10^{-4}$. The individual value errors are $4.61$, $3.02$, $6.42$, $6.49$, and $2.66$, each in units of $10^{-4}$. On the shared paths, the ansatz yields the same certainty equivalent as the closed-form policy, $1.10105$, as expected when both use $\pi^{\star}$.
 
 \subsection{Power-scaled value network}
 
-E3 trains $V=\mathrm e^{g(t,\log w)}w^{1-\gamma}/(1-\gamma)$ for $2{,}000$ epochs, five seeds, $25{,}000$ collocation points and $8{,}000$ terminal points. Policy mean absolute errors are $1.81\times 10^{-3}$, $2.41\times 10^{-3}$, $1.46\times 10^{-3}$, $8.14\times 10^{-4}$, and $1.60\times 10^{-3}$. The mean is $1.62\times 10^{-3}$ and the sample standard deviation is $5.79\times 10^{-4}$. Value mean absolute errors average $7.09\times 10^{-4}$ with standard deviation $1.60\times 10^{-4}$. That is slightly larger than the time-only ansatz. The weight is no longer an identity, and it is still within a few times the grid's $2.52\times 10^{-4}$. Traded certainty equivalents average $1.1010493$, against $1.1010499$ for the closed-form weight on the same paths.
+Experiment E3 trains the network $V=\mathrm e^{g(t,\log w)}w^{1-\gamma}/(1-\gamma)$ for $2{,}000$ epochs using five seeds, $25{,}000$ collocation points, and $8{,}000$ terminal points. The seed-level policy MAEs are $1.81\times 10^{-3}$, $2.41\times 10^{-3}$, $1.46\times 10^{-3}$, $8.14\times 10^{-4}$, and $1.60\times 10^{-3}$. Their mean is $1.62\times 10^{-3}$, with sample standard deviation $5.79\times 10^{-4}$. Value MAE averages $7.09\times 10^{-4}$, with standard deviation $1.60\times 10^{-4}$; this is slightly higher than for the time-only ansatz. Unlike that ansatz, the power-scaled network does not impose the optimal weight through its architecture. Its policy error is nevertheless only several times the grid error of $2.52\times 10^{-4}$. On the shared paths, its traded certainty equivalent averages $1.1010493$, compared with $1.1010499$ for the closed-form policy.
 
-\subsection{Forward deep BSDE}
+\subsection{Deep BSDE: five-seed results}
 
-E5 trains five seeds for $2{,}000$ epochs on $1{,}024$ paths and $64$ steps. Policy mean absolute errors are $0.03019$, $0.01840$, $0.02672$, $0.01184$, and $0.02021$. The mean is $0.02147$ and the sample standard deviation is $0.00720$. The absolute gap $|Y_0-V(0,1)|$ averages $4.85\times 10^{-5}$ (standard deviation $3.83\times 10^{-5}$). Traded certainty equivalents average $1.100984$, about $6.5\times 10^{-5}$ below the closed-form paths. The initial condition of the BSDE is accurate. The portfolio weight on the mesh is less accurate than the grid and less accurate than the power-scaled value network. Both facts are in \Cref{tab:main1d}.
+Experiment E5 trains five seeds for $2{,}000$ epochs, using batches of $1{,}024$ paths and 64 time steps. The policy MAEs are $0.03019$, $0.01840$, $0.02672$, $0.01184$, and $0.02021$, with mean $0.02147$ and sample standard deviation $0.00720$. The mean absolute gap $|Y_0-V(0,1)|$ is $4.85\times 10^{-5}$ (standard deviation $3.83\times 10^{-5}$). The traded certainty equivalent averages $1.100984$, approximately $6.5\times 10^{-5}$ below the closed-form result. Thus, the BSDE estimates the initial value accurately, while its mesh-based policy is less accurate than the grid and power-scaled network; both results are summarized in \Cref{tab:main1d}.
 
 \begin{table}[H]
 \centering
-\caption{One-dimensional mesh errors, means over seeds. The CRRA policy error is a derivative check. Sample standard deviations are in the reproducibility section. Closed-form certainty equivalent on the common paths: $1.101050$. Traded: grid $1.101050$, ansatz $1.101050$, power-scaled $1.101049$, deep BSDE $1.100984$.}
+\caption{Mean errors on the one-dimensional evaluation mesh. The CRRA policy error is a derivative check; sample standard deviations are reported in the reproducibility section. The closed-form certainty equivalent on the shared paths is $1.101050$. The traded certainty equivalents are $1.101050$ for the grid, $1.101050$ for the ansatz, $1.101049$ for the power-scaled network, and $1.100984$ for the deep BSDE.}
 \label{tab:main1d}
 {\small
 \begin{tabular}{lrrrr}
@@ -256,32 +254,32 @@ Deep BSDE & 5 & $2.1\times 10^{-2}$ & --- & $4.9\times 10^{-5}$ \\
 }
 \end{table}
 
-\section{A factor in the drift}
+\section{Stochastic investment opportunity set}
 \label{sec:factor}
 
-Constant-coefficient CRRA wealth collapses to a one-dimensional PDE, so a second risky asset with constant coefficients would not stress the grid. The extension follows the stochastic opportunity set of \citet{kim1996}. The factor is Ornstein--Uhlenbeck,
+With constant coefficients, CRRA homogeneity reduces the problem to a PDE with one spatial state variable. Adding another risky asset with constant coefficients would not introduce a state-dependent investment opportunity set, so we instead add a stochastic factor, following the setting of \citet{kim1996}. Let the factor satisfy the Ornstein--Uhlenbeck equation
 \begin{equation}
 \mathrm dY_t = -\kappa Y_t\,\mathrm dt + \nu\,\mathrm dB^Y_t,
 \end{equation}
-with $\kappa=1.2$, $\nu=0.30$, and $\mathrm{Corr}(\mathrm dB,\mathrm dB^Y)=\rho=0.45$. The stock drift is $\mu+\phi Y$ with $\phi=0.20$. Wealth still separates,
+with $\kappa=1.2$, $\nu=0.30$, and $\mathrm{Corr}(\mathrm dB,\mathrm dB^Y)=\rho=0.45$. The stock drift is $\mu+\phi Y$, where $\phi=0.20$. The value function still separates in wealth,
 \begin{equation}
 V(t,w,y)=f(t,y)\frac{w^{1-\gamma}}{1-\gamma},
 \end{equation}
-but the first-order condition contains a hedge term,
+although the optimal allocation now includes a hedging demand:
 \begin{equation}
 \pi^{\star}(t,y)=\frac{\mu+\phi y-r}{\gamma\sigma^2}+\frac{\rho\nu}{\sigma\gamma}\frac{f_y}{f}.
 \end{equation}
-The function $f$ is not constant in $y$. It is computed on a grid of $81$ factor nodes on $[-1.5,1.5]$ and $200$ time steps, with the policy lagged one time level inside a linear implicit step. Neumann conditions close the ends. The same code with $\phi=0$ and $\rho=0$ reproduces $\mathrm e^{AT}$ with max absolute error $2.52\times 10^{-4}$, which is the check that the factor scheme has not been given a free constant.
+The function $f$ varies with $y$ and is computed on a grid of 81 factor nodes over $[-1.5,1.5]$ and 200 time steps. The policy is lagged by one time level in the linear implicit step, and Neumann boundary conditions are imposed at both factor-domain endpoints. As a validation, setting $\phi=0$ and $\rho=0$ recovers $\mathrm e^{AT}$ with maximum absolute error $2.52\times 10^{-4}$. This check confirms that the factor solver reproduces the constant-opportunity benchmark without inserting its solution.
 
-The factor PINN learns $g(t,y)$ in $f=\mathrm e^{g}$, with $4{,}096$ Latin-hypercube collocation points and a terminal penalty $g(T,y)=0$. The factor BSDE carries two Brownian increments, evaluates both components of $Z$ before the state is updated, and uses the same terminal-loss-plus-utility objective. E7 is seed 0 and E8 is seed 1, each for $800$ epochs. Both are scored against the factor grid on $4{,}000$ points, not against the constant $\pi^{\star}$.
+The factor PINN represents $f$ as $f=\mathrm e^{g(t,y)}$, using $4{,}096$ Latin-hypercube collocation points and a terminal penalty enforcing $g(T,y)=0$. The factor BSDE uses two Brownian increments and evaluates both components of $Z$ before updating the state; its objective is the same terminal-loss-plus-utility objective. Experiments E7 and E8 use seeds 0 and 1, respectively, and train for 800 epochs. Both methods are evaluated against the factor grid on $4{,}000$ points, rather than against the constant-coefficient weight $\pi^{\star}$.
 
-At the Apple coefficients the factor grid gives $\pi(0,0)=0.49918$ and $V(0,1,0)=-0.16217$, against the constant-opportunity values $0.60084$ and $-0.17014$. The hedge term and the state-dependent drift are visible: the weight is no longer $\pi^{\star}$.
+Using the Apple calibration, the factor grid gives $\pi(0,0)=0.49918$ and $V(0,1,0)=-0.16217$. For comparison, the corresponding constant-opportunity values are $0.60084$ and $-0.17014$. The change in allocation reflects both the state-dependent drift and the hedging demand; the optimal weight is no longer constant.
 
-E7 and E8 train the factor network and the two-noise deep BSDE for $800$ epochs. Policy mean absolute error of the power head against the factor grid is $0.01810$ (seed 0) and $0.01861$ (seed 1). Value error is $0.0437$ and $0.0451$. The deep BSDE policy errors are $0.0949$ and $0.0994$. Its $Y_0$ is about $-0.1717$, against the grid value $-0.1622$ at $(W,Y)=(1,0)$, a gap of $9.6\times 10^{-3}$. On this problem the value network follows the grid more closely than the BSDE. \Cref{fig:factor} is the grid policy over $(t,Y)$.
+For E7 and E8, the factor network and two-noise deep BSDE are each trained for 800 epochs. The power-scaled network's policy MAEs against the factor grid are $0.01810$ (seed 0) and $0.01861$ (seed 1); the corresponding value MAEs are $0.0437$ and $0.0451$. The deep BSDE policy MAEs are $0.0949$ and $0.0994$. Its initial value estimate is approximately $-0.1717$, compared with the grid value $-0.1622$ at $(W,Y)=(1,0)$, a difference of $9.6\times 10^{-3}$. In this experiment, the power-scaled network has lower reported policy error than the deep BSDE. \Cref{fig:factor} shows the grid policy over $(t,Y)$.
 
 \begin{table}[H]
 \centering
-\caption{Factor model against the $(t,Y)$ grid. Two seeds, $800$ epochs. $\pi(0,0)$ and $V(0,1,0)$ are grid quantities and do not depend on the seed.}
+\caption{Factor-model results compared with the $(t,Y)$ grid. Each network is trained for 800 epochs using two seeds. The grid values $\pi(0,0)$ and $V(0,1,0)$ are seed-independent.}
 \label{tab:factor}
 \begin{tabular}{lrr}
 \toprule
@@ -295,41 +293,43 @@ $|Y_0-V_{\mathrm{grid}}(0,1,0)|$ & 0.00957 & 0.00954 \\
 \end{tabular}
 \end{table}
 
-\section{A cap that binds}
+\section{Results under a binding portfolio constraint}
 \label{sec:cap}
 
-The unconstrained weight is about $0.60$, so the interval $[0,1]$ does not bind. E9 and E10 use $\pi\in[0,0.4]$. For constant coefficients the constrained optimum is the projection of $\pi^{\star}$ onto that interval, and the grid is still the reference the network is scored against. The vanilla PINN is trained with the Hamiltonian evaluated at the projected control, $2{,}000$ epochs, seeds 0 and 1. A network that reports $\pi^{\star}$ on this problem is wrong.
+The unconstrained Merton weight is approximately $0.60$, so the interval $[0,1]$ does not bind. Experiments E9 and E10 instead impose the tighter constraint $\pi\in[0,0.4]$. With constant coefficients, the constrained optimum is the projection of $\pi^{\star}$ onto this interval. We use the finite-difference solution under the same constraint as the network's reference. The power-scaled value network is trained for $2{,}000$ epochs with seeds 0 and 1, and the Hamiltonian is evaluated at the projected control. A network that returned the unconstrained weight $\pi^{\star}$ would therefore be incorrect.
 
-E9 and E10 are seeds 0 and 1 of that capped solve, $400\times 200$ in the grid and $2{,}000$ epochs in the network. The constrained grid's weight differs from $\pi^{\star}$ by mean absolute error $0.200837$, which is $\pi^{\star}-0.4$ when the cap binds at every mesh point. The power-scaled network, trained with the projected Hamiltonian, matches that grid's weight to $6.0\times 10^{-9}$ on both seeds. Value error against the grid is $4.12\times 10^{-3}$ and $4.15\times 10^{-3}$. The grid value at the node nearest $(0,1)$ is $-0.166096$, above the unconstrained $-0.170139$ (less negative, because the forbidden leverage was valuable). The network did not report the unconstrained weight.
+Experiments E9 and E10 use a $400\times 200$ grid and network seeds 0 and 1. On the shared mesh, the constrained grid's policy differs from the unconstrained $\pi^{\star}$ by MAE $0.200837$, equal to $\pi^{\star}-0.4$ because the upper bound binds throughout. The power-scaled network reproduces the constrained grid policy to within $6.0\times 10^{-9}$ for both seeds. Its value MAEs against the grid are $4.12\times 10^{-3}$ (seed 0) and $4.15\times 10^{-3}$ (seed 1). At the grid node nearest $(t,W)=(0,1)$, the constrained value is $-0.166096$, greater (less negative) than the unconstrained value $-0.170139$. This increase reflects the value of the leverage excluded by the cap. The network does not return the unconstrained weight.
 
-\section{What the pictures are for}
+\section{Figures}
 \label{sec:fig}
+
+The figures show training behavior, recovered policies, and pointwise errors. Each image is generated from a logged checkpoint.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.86\textwidth]{training_loss.png}
-\caption{Training loss at every epoch for seed 0 of the power-scaled network, the CRRA ansatz, and the deep BSDE. The saved weights are the minimizer of the curve, not the last epoch.}
+\caption{Training loss by epoch for seed~0 of the power-scaled value network, the time-only CRRA ansatz, and the forward deep BSDE. The vertical axis is logarithmic. For each method, the reported checkpoint is the epoch with the lowest loss, which need not be the final epoch. The losses generally decline through most of training, and the CRRA ansatz reaches the lowest loss among the three methods.}
 \label{fig:loss}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{policy_slices.png}
-\caption{Policy against wealth at two times for the grid, the CRRA ansatz, and deep BSDE seed 0. The axis is the scale of $\pi^{\star}$.}
+\caption{Portfolio weight $\pi$ as a function of wealth $W$ at two fixed times for the finite-difference grid (E1), the CRRA ansatz, and deep BSDE seed~0. The horizontal line marks the closed-form weight $\pi^{\star}\approx0.601$. The left panel uses a narrow vertical range around this value; the right panel shows a wider range. The grid and ansatz policies nearly coincide with $\pi^{\star}$. The deep BSDE policy is more variable and mildly wealth-dependent, consistent with its larger policy MAE.}
 \label{fig:slices}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.72\textwidth]{policy_pinn_slice.png}
-\caption{Seed-0 power-scaled policy near $t=0$.}
+\caption{Seed-0 policy from the power-scaled value network near $t=0$, plotted against wealth. The recovered policy is nearly flat and close to $\pi^{\star}$, with small deviations near the edges of the wealth interval.}
 \label{fig:pinnslice}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.72\textwidth]{surface_pinn_error.png}
-\caption{Seed-0 power-scaled value error against the closed form. The surface is clipped to the 2nd and 98th percentiles of the error, here $[-1.78\times 10^{-3},\, 3.03\times 10^{-3}]$.}
+\caption{Pointwise error of the seed-0 power-scaled value network relative to the closed-form solution, shown over time and wealth. For visualization, the surface is clipped at the 2nd and 98th error percentiles, $-1.78\times10^{-3}$ and $3.03\times10^{-3}$. Absolute errors are below $10^{-3}$ over most of the domain, with the largest deviations near the training-window corners.}
 \label{fig:pinnerr}
 \end{figure}
 
@@ -337,26 +337,26 @@ E9 and E10 are seeds 0 and 1 of that capped solve, $400\times 200$ in the grid a
 \centering
 \includegraphics[width=0.46\textwidth]{error_heatmap_fdm.png}
 \includegraphics[width=0.46\textwidth]{error_heatmap_pinn.png}
-\caption{Absolute value error of the E1 grid (left) and of the seed-0 power-scaled network (right). The color scales are separate. The network's value error is smaller than the grid's on this window.}
+\caption{Absolute value-error heat maps for the $500\times252$ finite-difference grid (E1, left) and the seed-0 power-scaled network (right). Each panel uses its own color scale to show the structure of the errors. Over wealth $[0.5,2]$, the network's absolute value error is smaller than the grid's, although the grid policy error is already only $2.5\times10^{-4}$.}
 \label{fig:heat}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.72\textwidth]{surface_factor_policy.png}
-\caption{E7 factor-grid policy over $(t,Y)$. At $Y=0$ the weight is about $0.50$, not the constant-opportunity value $0.60$.}
+\caption{Optimal risky weight on the $(t,Y)$ grid for the one-factor problem (E7). The Ornstein--Uhlenbeck factor $Y$ is correlated with the stock. At $Y=0$, the weight is approximately $0.50$, compared with $0.60$ in the constant-opportunity model. The surface illustrates how the allocation varies with the factor and time.}
 \label{fig:factor}
 \end{figure}
 
 \section{Reproducibility}
 \label{sec:repro}
 
-Work in \texttt{merton\_comparative\_study}. Check the drift identity with \texttt{python -m src.experiment.v2.check\_market}. Run one experiment with \texttt{python run\_one.py --exp E1}, and the same form through \texttt{E10}. Rebuild figures, without training, with \texttt{python -m src.experiment.v2.make\_figures}. Build this PDF with \texttt{pdflatex}, \texttt{bibtex}, and two further \texttt{pdflatex} passes. E1 aborts if the policy MAE exceeds $2\times 10^{-3}$ or the gap in $V(0,1)$ exceeds $5\times 10^{-3}$. Standard deviations for \Cref{tab:main1d} are in \texttt{results/v2/figures/table\_main.csv}: power-scaled policy $5.79\times 10^{-4}$, deep BSDE policy $7.20\times 10^{-3}$.
+Code and run artifacts are available in the companion GitHub repository. The repository's \texttt{README.md} describes the environment and provides instructions for reproducing experiments E1--E10, regenerating the figures, and building this PDF. Experiment E1 stops if policy MAE exceeds $2\times10^{-3}$ or if the absolute error in $V(0,1)$ exceeds $5\times10^{-3}$. The sample standard deviations reported in \Cref{tab:main1d} are listed in \texttt{results/v2/figures/table\_main.csv}: $5.79\times10^{-4}$ for the power-scaled policy and $7.20\times10^{-3}$ for the deep BSDE policy.
 
-\section{Limits}
+\section{Limitations and scope}
 \label{sec:limits}
 
-The rate $r$ is not estimated from prices. One equity and a one-factor opportunity set are not a large-$d$ test. The CRRA ansatz cannot be used as evidence that a value network has learned the weight. The deep BSDE is trained on $64$ time steps and scored on $252$-step wealth paths, so a gap between $Y_0$ and traded utility is expected. The constrained problem has an explicit projection at constant coefficients; the grid is reported because that is the reference a later non-explicit constraint would use, and because the network is not handed $\pi^{\star}$.
+The risk-free rate is held fixed rather than estimated from the price data. The calibration uses one equity, and the factor extension has only one additional state; neither experiment tests a genuinely high-dimensional problem. Because the CRRA ansatz imposes the constant-coefficient policy by construction, its small policy error does not show that a general value network has learned the optimal allocation. The deep BSDE is trained with 64 time steps but evaluated using wealth paths simulated with 252 steps, so its initial-value estimate $Y_0$ need not coincide with the utility estimate from the trading simulation. Finally, the constrained constant-coefficient problem has a closed-form projection solution. We include the grid as a benchmark for future constraints without such an explicit solution and to avoid supplying $\pi^{\star}$ to the network.
 
 \bibliographystyle{plainnat}
 \bibliography{refs_gbm}
