@@ -95,9 +95,9 @@ Using $m$ in place of the GBM drift would change the optimal weight from $0.6008
 \section{The Merton portfolio problem}
 \label{sec:control}
 
-Wealth invested in the risky asset and the money-market account evolves according tos
+Wealth invested in the risky asset and the money-market account evolves according to
 \begin{equation}
-\mathrm dW_t = W_t\big(r+\pi_t(\mu-r)\big)\,\mathrm dt + W_t\pi_t\sigma\,\mathrm dB_t,
+\mathrm dW_t = W_t\big(r+\pi_t(\mu-r)\big)\,\mathrm dt + W_t\pi_t\sigma\,\mathrm dB_t.
 \end{equation}
 The investor maximizes expected terminal utility, $\E[U(W_T)]$, where
 \begin{equation}
@@ -204,9 +204,9 @@ When we go from 128 to 500 wealth points (roughly four times as many), the polic
 \label{fig:fdm}
 \end{figure}
 
-\subsection{Grid refinement study}
+\subsection{Sensitivity to risk aversion and volatility}
 
-Experiment E6 repeats the $256\times 128$ solve for risk-aversion levels $\gamma=3$ and $\gamma=7$, and for volatility scaled by factors of $0.8$ and $1.2$. Each case uses the same corrected drift formula. Policy MAE ranges from $3.4\times 10^{-4}$ to $1.7\times 10^{-3}$, indicating that the grid is not tailored only to the Apple calibration $(\gamma,\sigma)=(5,0.256573)$.
+E2, reported above, changes the number of grid points and keeps $\gamma$ and $\sigma$ at the Apple values. E6 does the opposite. It keeps one grid, $N_x=256$ and $N_t=128$, and changes the investor. The two risk-aversion levels are $\gamma=3$ and $\gamma=7$. Volatility is the Apple estimate scaled by $0.8$ and by $1.2$. Each row uses the corrected drift $\mu=m+\sigma^2/2$ for that row's $\sigma$. Policy MAE ranges from $3.4\times 10^{-4}$ to $1.7\times 10^{-3}$. The grid is not tuned only to $(\gamma,\sigma)=(5,0.256573)$.
 
 \begin{table}[H]
 \centering
@@ -271,7 +271,7 @@ although the optimal allocation now includes a hedging demand:
 \end{equation}
 The function $f$ varies with $y$ and is computed on a grid of 81 factor nodes over $[-1.5,1.5]$ and 200 time steps. The policy is lagged by one time level in the linear implicit step, and Neumann boundary conditions are imposed at both factor-domain endpoints. As a validation, setting $\phi=0$ and $\rho=0$ recovers $\mathrm e^{AT}$ with maximum absolute error $2.52\times 10^{-4}$. This check confirms that the factor solver reproduces the constant-opportunity benchmark without inserting its solution.
 
-The factor PINN represents $f$ as $f=\mathrm e^{g(t,y)}$, using $4{,}096$ Latin-hypercube collocation points and a terminal penalty enforcing $g(T,y)=0$. The factor BSDE uses two Brownian increments and evaluates both components of $Z$ before updating the state; its objective is the same terminal-loss-plus-utility objective. Experiments E7 and E8 use seeds 0 and 1, respectively, and train for 800 epochs. Both methods are evaluated against the factor grid on $4{,}000$ points, rather than against the constant-coefficient weight $\pi^{\star}$.
+The factor value network represents $f$ as $f=\mathrm e^{g(t,y)}$, using $4{,}096$ Latin-hypercube collocation points and a terminal penalty enforcing $g(T,y)=0$. The factor BSDE uses two Brownian increments and evaluates both components of $Z$ before updating the state; its objective is the same terminal-loss-plus-utility objective. Experiments E7 and E8 use seeds 0 and 1, respectively, and train for 800 epochs. Both methods are evaluated against the factor grid on $4{,}000$ points, rather than against the constant-coefficient weight $\pi^{\star}$.
 
 Using the Apple calibration, the factor grid gives $\pi(0,0)=0.49918$ and $V(0,1,0)=-0.16217$. For comparison, the corresponding constant-opportunity values are $0.60084$ and $-0.17014$. The change in allocation reflects both the state-dependent drift and the hedging demand; the optimal weight is no longer constant.
 
@@ -351,7 +351,7 @@ The figures show training behavior, recovered policies, and pointwise errors. Ea
 \section{Reproducibility}
 \label{sec:repro}
 
-Code and run artifacts are available in the companion GitHub repository. The repository's \texttt{README.md} describes the environment and provides instructions for reproducing experiments E1--E10, regenerating the figures, and building this PDF. Experiment E1 stops if policy MAE exceeds $2\times10^{-3}$ or if the absolute error in $V(0,1)$ exceeds $5\times10^{-3}$. The sample standard deviations reported in \Cref{tab:main1d} are listed in \texttt{results/v2/figures/table\_main.csv}: $5.79\times10^{-4}$ for the power-scaled policy and $7.20\times10^{-3}$ for the deep BSDE policy.
+Code and run artifacts are available in the companion GitHub repository. The repository's \texttt{README.md} describes the environment and provides instructions for reproducing experiments E1--E10, regenerating the figures, and building this PDF. Experiment E1 stops if policy MAE exceeds $2\times10^{-3}$ or if the absolute error in $V(0,1)$ exceeds $5\times10^{-3}$. \Cref{tab:main1d} prints means only. The sample standard deviations are in \texttt{results/v2/figures/table\_main.csv}: $5.79\times10^{-4}$ for the power-scaled policy and $7.20\times10^{-3}$ for the deep BSDE policy.
 
 \section{Limitations and scope}
 \label{sec:limits}
